@@ -264,6 +264,9 @@ fn main() {
 }
 
 pub fn signup(client: &Client) -> Result<PartySignup, ()> {
+for argument in env::args() {
+    println!("{argument}");
+}
     let key = "signup-keygen".to_string();
 
     let res_body = postb(client, "signupkeygen", key).unwrap();

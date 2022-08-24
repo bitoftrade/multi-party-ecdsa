@@ -3,11 +3,24 @@ use std::fs;
 use std::sync::RwLock;
 
 use rocket::serde::json::Json;
-use rocket::{post, routes, State};
+use rocket::{post,get, routes, State};
 use uuid::Uuid;
 
 mod common;
 use common::{Entry, Index, Key, Params, PartySignup};
+
+#[get("/ping")]
+fn ping() -> &'static str {
+    "pong"
+}
+
+#[get("/print")]
+fn print() -> &'static str {
+   println!("print");
+   return "print"
+    // content::Json("{ 'hi': 'world' }")
+}
+
 
 #[post("/get", format = "json", data = "<request>")]
 fn get(
@@ -38,6 +51,7 @@ fn set(db_mtx: &State<RwLock<HashMap<Key, String>>>, request: Json<Entry>) -> Js
 
 #[post("/signupkeygen", format = "json")]
 fn signup_keygen(db_mtx: &State<RwLock<HashMap<Key, String>>>) -> Json<Result<PartySignup, ()>> {
+    println!("signupkeygen");
     let data = fs::read_to_string("params.json")
         .expect("Unable to read params, make sure config file is present in the same folder ");
     let params: Params = serde_json::from_str(&data).unwrap();
@@ -135,7 +149,7 @@ async fn main() {
     }
     /////////////////////////////////////////////////////////////////
     rocket::build()
-        .mount("/", routes![get, set, signup_keygen, signup_sign])
+        .mount("/", routes![print, ping, get, set, signup_keygen, signup_sign])
         .manage(db_mtx)
         .launch()
         .await
