@@ -27,10 +27,10 @@ use common::{
 
 #[allow(clippy::cognitive_complexity)]
 fn main() {
-    if env::args().nth(4).is_some() {
+    if env::args().nth(6).is_some() {
         panic!("too many arguments")
     }
-    if env::args().nth(3).is_none() {
+    if env::args().nth(5).is_none() {
         panic!("too few arguments")
     }
     let message_str = env::args().nth(3).unwrap_or_else(|| "".to_string());
@@ -54,11 +54,7 @@ fn main() {
         Point<Secp256k1>,
     ) = serde_json::from_str(&data).unwrap();
 
-    //read parameters:
-    let data = fs::read_to_string("params.json")
-        .expect("Unable to read params, make sure config file is present in the same folder ");
-    let params: Params = serde_json::from_str(&data).unwrap();
-    let THRESHOLD = params.threshold.parse::<u16>().unwrap();
+    let THRESHOLD: u16 = env::args().nth(4).unwrap().parse().unwrap();
 
     //signup:
     let (party_num_int, uuid) = match signup(&client).unwrap() {

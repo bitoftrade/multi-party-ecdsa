@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::fs;
 use std::sync::RwLock;
+use std::{ env };
 
 use rocket::serde::json::Json;
 use rocket::{post,get, routes, State};
@@ -13,14 +13,6 @@ use common::{Entry, Index, Key, Params, PartySignup};
 fn ping() -> &'static str {
     "pong"
 }
-
-#[get("/print")]
-fn print() -> &'static str {
-   println!("print");
-   return "print"
-    // content::Json("{ 'hi': 'world' }")
-}
-
 
 #[post("/get", format = "json", data = "<request>")]
 fn get(
@@ -52,16 +44,15 @@ fn set(db_mtx: &State<RwLock<HashMap<Key, String>>>, request: Json<Entry>) -> Js
 #[post("/signupkeygen", format = "json")]
 fn signup_keygen(db_mtx: &State<RwLock<HashMap<Key, String>>>) -> Json<Result<PartySignup, ()>> {
     println!("signupkeygen");
-    let data = fs::read_to_string("params.json")
-        .expect("Unable to read params, make sure config file is present in the same folder ");
-    let params: Params = serde_json::from_str(&data).unwrap();
-    let parties = params.parties.parse::<u16>().unwrap();
-
     let key = "signup-keygen".to_string();
+    let params_key = "params-keygen".to_string();
 
     let party_signup = {
         let hm = db_mtx.read().unwrap();
         let value = hm.get(&key).unwrap();
+        let params = hm.get(&params_key).unwrap();
+        let params_value: Params = serde_json::from_str(params).unwrap();
+        let parties = params_value.parties.parse::<u16>().unwrap();
         let client_signup: PartySignup = serde_json::from_str(value).unwrap();
         if client_signup.number < parties {
             PartySignup {
@@ -84,15 +75,15 @@ fn signup_keygen(db_mtx: &State<RwLock<HashMap<Key, String>>>) -> Json<Result<Pa
 #[post("/signupsign", format = "json")]
 fn signup_sign(db_mtx: &State<RwLock<HashMap<Key, String>>>) -> Json<Result<PartySignup, ()>> {
     //read parameters:
-    let data = fs::read_to_string("params.json")
-        .expect("Unable to read params, make sure config file is present in the same folder ");
-    let params: Params = serde_json::from_str(&data).unwrap();
-    let threshold = params.threshold.parse::<u16>().unwrap();
     let key = "signup-sign".to_string();
+    let params_key = "params-keygen".to_string();
 
     let party_signup = {
         let hm = db_mtx.read().unwrap();
         let value = hm.get(&key).unwrap();
+        let params = hm.get(&params_key).unwrap();
+        let params_value: Params = serde_json::from_str(params).unwrap();
+        let threshold = params_value.threshold.parse::<u16>().unwrap();
         let client_signup: PartySignup = serde_json::from_str(value).unwrap();
         if client_signup.number < threshold + 1 {
             PartySignup {
@@ -114,8 +105,15 @@ fn signup_sign(db_mtx: &State<RwLock<HashMap<Key, String>>>) -> Json<Result<Part
 
 #[tokio::main]
 async fn main() {
-    // let mut my_config = Config::development();
+    if env::args().nth(3).is_some() {
+        panic!("too many arguments")
+    }
+    if env::args().nth(2).is_none() {
+        panic!("too few arguments")
+    }
+    // let mut my_config = surf::Config::development();
     // my_config.set_port(18001);
+    let db: HashMap<Key, String> = HashMap::new();
     let db: HashMap<Key, String> = HashMap::new();
     let db_mtx = RwLock::new(db);
     //rocket::custom(my_config).mount("/", routes![get, set]).manage(db_mtx).launch();
@@ -126,10 +124,19 @@ async fn main() {
 
     let keygen_key = "signup-keygen".to_string();
     let sign_key = "signup-sign".to_string();
+    let params_key = "params-keygen".to_string();
 
     let uuid_keygen = Uuid::new_v4().to_string();
     let uuid_sign = Uuid::new_v4().to_string();
 
+    println!("{} - threshold", env::args().nth(1).unwrap());
+    println!("{} - parties", env::args().nth(2).unwrap());
+
+    let params = Params {
+        parties: env::args().nth(2).unwrap(),
+        threshold: env::args().nth(1).unwrap(),
+    };
+ 
     let party1 = 0;
     let party_signup_keygen = PartySignup {
         number: party1,
@@ -146,10 +153,11 @@ async fn main() {
             serde_json::to_string(&party_signup_keygen).unwrap(),
         );
         hm.insert(sign_key, serde_json::to_string(&party_signup_sign).unwrap());
+        hm.insert(params_key, serde_json::to_string(&params).unwrap());
     }
     /////////////////////////////////////////////////////////////////
     rocket::build()
-        .mount("/", routes![print, ping, get, set, signup_keygen, signup_sign])
+        .mount("/", routes![ping, get, set, signup_keygen, signup_sign])
         .manage(db_mtx)
         .launch()
         .await

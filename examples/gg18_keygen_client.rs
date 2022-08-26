@@ -25,18 +25,15 @@ use common::{
 };
 
 fn main() {
-    if env::args().nth(3).is_some() {
+    if env::args().nth(5).is_some() {
         panic!("too many arguments")
     }
-    if env::args().nth(2).is_none() {
+    if env::args().nth(4).is_none() {
         panic!("too few arguments")
     }
     //read parameters:
-    let data = fs::read_to_string("params.json")
-        .expect("Unable to read params, make sure config file is present in the same folder ");
-    let params: Params = serde_json::from_str(&data).unwrap();
-    let PARTIES: u16 = params.parties.parse::<u16>().unwrap();
-    let THRESHOLD: u16 = params.threshold.parse::<u16>().unwrap();
+    let PARTIES: u16 = env::args().nth(4).unwrap().parse().unwrap();
+    let THRESHOLD: u16 = env::args().nth(3).unwrap().parse().unwrap();
 
     let client = Client::new();
 
@@ -264,9 +261,6 @@ fn main() {
 }
 
 pub fn signup(client: &Client) -> Result<PartySignup, ()> {
-for argument in env::args() {
-    println!("{argument}");
-}
     let key = "signup-keygen".to_string();
 
     let res_body = postb(client, "signupkeygen", key).unwrap();
