@@ -13,7 +13,7 @@ Original implementation requires params.json file located in the executed folder
   "threshold": "2"
 }
 ```
-It brings complexity to run several gg18_sm_manager at the same time. To use different parameters in params.json file there are should be several located and executed in different folders.
+It brings complexity to run several gg18_sm_manager at the same time. To use different parameters in params.json file there are should be located and executed in different folders.
 
 
 To be able to run several servers in the same folder and use different params, current implementation get parties and threshold from env arguments. 
