@@ -1,8 +1,10 @@
 # Multi-party ECDSA
 
-[Origin repo](https://github.com/ZenGo-X/multi-party-ecdsa)
+[origin repo](https://github.com/ZenGo-X/multi-party-ecdsa)
 
 Original implementation requires params.json file located in the executed folder.
+
+
 
 ```bash
 # params.json 
@@ -16,6 +18,17 @@ It brings complexity to run several gg18_sm_manager at the same time. To use dif
 
 To be able to run several servers in the same folder and use different params, current implementation get parties and threshold from env arguments. 
 
+## Build 
+
+For Linux:
+```bash
+cargo build --release --examples
+```
+
+For MacOs:
+```bash
+cargo build --release --examples --no-default-features --features curv-kzen/num-bigint
+```
 ## Run GG18 Demo
 
 The following steps are for setup, key generation with `n` parties and signing with `t+1` parties.
