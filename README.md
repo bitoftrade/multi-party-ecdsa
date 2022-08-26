@@ -52,8 +52,8 @@ ROCKET_ADDRESS=0.0.0.0 ./gg18_sm_manager 1 2
 
 
 ```bash
-./gg18_sign_client http://127.0.0.1:8001 <shares_filename> <text_to_sign> <threshold> <parties>
+./gg18_sign_client http://127.0.0.1:8000 <shares_filename> <text_to_sign> <threshold> <parties>
 
-# ./gg18_sign_client http://127.0.0.1:8001 keys.store "hello" 1 2 
+# ./gg18_sign_client http://127.0.0.1:8000 keys.store "hello" 1 2 
 
 ```
