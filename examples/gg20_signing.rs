@@ -34,6 +34,11 @@ struct Cli {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args: Cli = Cli::from_args();
+    let message = match hex::decode(args.data_to_sign.clone()) {
+        Ok(x) => x,
+        Err(_e) => args.data_to_sign.as_bytes().to_vec(),
+    };
+    let message = &message[..];
     let local_share = tokio::fs::read(args.local_share)
         .await
         .context("cannot read local share")?;
@@ -55,15 +60,16 @@ async fn main() -> Result<()> {
         .await
         .map_err(|e| anyhow!("protocol execution terminated with error: {}", e))?;
 
-    let (_i, incoming, outgoing) = join_computation(args.address, &format!("{}-online", args.room))
+    let (i, incoming, outgoing) = join_computation(args.address, &format!("{}-online", args.room))
         .await
         .context("join online computation")?;
 
     tokio::pin!(incoming);
     tokio::pin!(outgoing);
 
+    println!("{}", BigInt::from_bytes(message));
     let (signing, partial_signature) = SignManual::new(
-        BigInt::from_bytes(args.data_to_sign.as_bytes()),
+        BigInt::from_bytes(message),
         completed_offline_stage,
     )?;
 
