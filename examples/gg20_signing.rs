@@ -67,7 +67,6 @@ async fn main() -> Result<()> {
     tokio::pin!(incoming);
     tokio::pin!(outgoing);
 
-    println!("{}", BigInt::from_bytes(message));
     let (signing, partial_signature) = SignManual::new(
         BigInt::from_bytes(message),
         completed_offline_stage,
