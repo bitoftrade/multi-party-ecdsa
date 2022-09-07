@@ -55,6 +55,7 @@ async fn main() -> Result<()> {
     tokio::pin!(outgoing);
 
     let signing = OfflineStage::new(i, args.parties, local_share)?;
+    println!("true");
     let completed_offline_stage = AsyncProtocol::new(signing, incoming, outgoing)
         .run()
         .await
