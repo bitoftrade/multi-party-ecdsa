@@ -45,6 +45,7 @@ async fn main() -> Result<()> {
     tokio::pin!(outgoing);
 
     let keygen = Keygen::new(args.index, args.threshold, args.number_of_parties)?;
+    println!("true");
     let output = AsyncProtocol::new(keygen, incoming, outgoing)
         .run()
         .await
